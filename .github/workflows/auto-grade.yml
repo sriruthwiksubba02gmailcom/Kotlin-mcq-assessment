@@ -1,0 +1,36 @@
+name: Auto-Grade Kotlin MCQs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Extract and Grade Answers from README.md
+      run: |
+        correct_answers=("A" "A" "A" )  # Add all correct answers here
+        student_answers=($(grep -oP '(?<=Your Answer: )\w' README.md))
+
+        score=0
+        total=${#correct_answers[@]}
+
+        for i in "${!correct_answers[@]}"; do
+          if [[ "${student_answers[i]}" == "${correct_answers[i]}" ]]; then
+            ((score++))
+          fi
+        done
+
+        echo "Score: $score/$total" > RESULT.md
+        cat RESULT.md
+
+    - name: Upload Result
+      uses: actions/upload-artifact@v2
+      with:
+        name: grading-result
+        path: RESULT.md
