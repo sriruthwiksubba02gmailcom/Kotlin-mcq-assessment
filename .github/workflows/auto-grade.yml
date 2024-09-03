@@ -29,12 +29,12 @@ jobs:
         echo "        content = file.read()" >> grade.py
         echo "    answers = re.findall(r'\*\*Your Answer:\*\*\s*(\w)', content)" >> grade.py
         echo "    for i, answer in enumerate(answers):" >> grade.py
-        echo "        if answer.upper() == correct_answers[i]:" >> grade.py
+        echo "        if i < total and answer.upper() == correct_answers[i]:" >> grade.py
         echo "            score += 1" >> grade.py
         echo "    result = f'# Grading Result\\n\\n**Score:** {score}/{total}\\n\\n'" >> grade.py
         echo "    for i, answer in enumerate(answers):" >> grade.py
         echo "        correct = correct_answers[i]" >> grade.py
-        echo "        result += f'**Question {i+1}:** Your Answer: {answer.upper()} | Correct Answer: {correct} | { '✅ Correct' if answer.upper() == correct else '❌ Incorrect'}\\n\\n'" >> grade.py
+        echo "        result += f'**Question {i+1}:** Your Answer: {answer.upper()} | Correct Answer: {correct} | {'✅ Correct' if answer.upper() == correct else '❌ Incorrect'}\\n\\n'" >> grade.py
         echo "    with open('RESULT.md', 'w') as result_file:" >> grade.py
         echo "        result_file.write(result)" >> grade.py
         echo "except Exception as e:" >> grade.py
