@@ -18,44 +18,31 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install Dependencies
-      run: pip install pyyaml
-
-    - name: Extract and Grade Answers
+    - name: Create Grading Script
       run: |
-        import re
-        import yaml
+        echo "import re" > grade.py
+        echo "correct_answers = ['B', 'A', 'B'] # Add more answers as needed" >> grade.py
+        echo "score = 0" >> grade.py
+        echo "total = len(correct_answers)" >> grade.py
+        echo "try:" >> grade.py
+        echo "    with open('README.md', 'r') as file:" >> grade.py
+        echo "        content = file.read()" >> grade.py
+        echo "    answers = re.findall(r'\*\*Your Answer:\*\*\s*(\w)', content)" >> grade.py
+        echo "    for i, answer in enumerate(answers):" >> grade.py
+        echo "        if answer.upper() == correct_answers[i]:" >> grade.py
+        echo "            score += 1" >> grade.py
+        echo "    result = f'# Grading Result\\n\\n**Score:** {score}/{total}\\n\\n'" >> grade.py
+        echo "    for i, answer in enumerate(answers):" >> grade.py
+        echo "        correct = correct_answers[i]" >> grade.py
+        echo "        result += f'**Question {i+1}:** Your Answer: {answer.upper()} | Correct Answer: {correct} | { '✅ Correct' if answer.upper() == correct else '❌ Incorrect'}\\n\\n'" >> grade.py
+        echo "    with open('RESULT.md', 'w') as result_file:" >> grade.py
+        echo "        result_file.write(result)" >> grade.py
+        echo "except Exception as e:" >> grade.py
+        echo "    print(f'Error occurred: {str(e)}')" >> grade.py
+        echo "    exit(1)" >> grade.py
 
-        # Define correct answers
-        correct_answers = [
-          'A',  
-          'A',  
-          'A',  
-          # Add remaining answers up to Q50
-        ]
-
-        # Read student's README.md
-        with open('README.md', 'r') as file:
-          content = file.read()
-
-        # Extract answers using regex
-        answers = re.findall(r'\*\*Your Answer:\*\*\s*(\w)', content)
-
-        # Calculate score
-        score = sum(1 for i, answer in enumerate(answers) if answer.upper() == correct_answers[i])
-        total = len(correct_answers)
-
-        # Prepare result content
-        result = f"# Grading Result\n\n**Score:** {score}/{total}\n\n"
-
-        # Detailed feedback
-        for i, answer in enumerate(answers):
-          correct = correct_answers[i]
-          result += f"**Question {i+1}:** Your Answer: {answer.upper()} | Correct Answer: {correct} | {'✅ Correct' if answer.upper() == correct else '❌ Incorrect'}\n\n"
-
-        # Write result to RESULT.md
-        with open('RESULT.md', 'w') as file:
-          file.write(result)
+    - name: Run Grading Script
+      run: python grade.py
 
     - name: Upload Grading Result
       uses: actions/upload-artifact@v3
