@@ -10,27 +10,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-    - name: Extract and Grade Answers from README.md
-      run: |
-        correct_answers=("A" "A" "A" )  # Add all correct answers here
-        student_answers=($(grep -oP '(?<=Your Answer: )\w' README.md))
-
-        score=0
-        total=${#correct_answers[@]}
-
-        for i in "${!correct_answers[@]}"; do
-          if [[ "${student_answers[i]}" == "${correct_answers[i]}" ]]; then
-            ((score++))
-          fi
-        done
-
-        echo "Score: $score/$total" > RESULT.md
-        cat RESULT.md
-
-    - name: Upload Result
-      uses: actions/upload-artifact@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        name: grading-result
+        python-version: '3.x'
+
+    - name: Install Dependencies
+      run: pip install pyyaml
+
+    - name: Extract and Grade Answers
+      run: |
+        import re
+        import yaml
+
+        # Define correct answers
+        correct_answers = [
+          'A',  
+          'A',  
+          'A',  
+          # Add remaining answers up to Q50
+        ]
+
+        # Read student's README.md
+        with open('README.md', 'r') as file:
+          content = file.read()
+
+        # Extract answers using regex
+        answers = re.findall(r'\*\*Your Answer:\*\*\s*(\w)', content)
+
+        # Calculate score
+        score = sum(1 for i, answer in enumerate(answers) if answer.upper() == correct_answers[i])
+        total = len(correct_answers)
+
+        # Prepare result content
+        result = f"# Grading Result\n\n**Score:** {score}/{total}\n\n"
+
+        # Detailed feedback
+        for i, answer in enumerate(answers):
+          correct = correct_answers[i]
+          result += f"**Question {i+1}:** Your Answer: {answer.upper()} | Correct Answer: {correct} | {'✅ Correct' if answer.upper() == correct else '❌ Incorrect'}\n\n"
+
+        # Write result to RESULT.md
+        with open('RESULT.md', 'w') as file:
+          file.write(result)
+
+    - name: Upload Grading Result
+      uses: actions/upload-artifact@v3
+      with:
+        name: Grading Result
         path: RESULT.md
